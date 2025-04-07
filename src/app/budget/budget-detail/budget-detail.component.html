@@ -6,8 +6,8 @@
           Start Period
           <input
             type="number"
-            [(ngModel)]="startMonth"
-            (ngModelChange)="updateStartMonth($event)"
+            [value]="startMonth()"
+            (input)="updateMonth(startMonth, $event)"
             min="1"
             max="12"
             class="w-8 px-1 outline-none border-none"
@@ -15,8 +15,8 @@
           End Period
           <input
             type="number"
-            [(ngModel)]="endMonth"
-            (ngModelChange)="updateEndMonth($event)"
+            [value]="endMonth()"
+            (input)="updateMonth(endMonth, $event)"
             min="1"
             max="12"
             class="w-8 px-1 outline-none border-none"

@@ -6,6 +6,7 @@ import {
   QueryList,
   signal,
   ViewChildren,
+WritableSignal,
 } from '@angular/core';
 import { BudgetCategories, ToApply } from '../models/budget.interface';
 
@@ -15,6 +16,7 @@ import { BudgetCategories, ToApply } from '../models/budget.interface';
   styleUrl: './budget-detail.component.scss',
 })
 export class BudgetDetailComponent implements OnInit {
+
   @ViewChildren('cellInput') inputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   incomeCategories = signal<BudgetCategories[]>([]);
@@ -61,21 +63,15 @@ export class BudgetDetailComponent implements OnInit {
     return months;
   }
 
-  updateStartMonth(value: string) {
-    if (!value) return;
+  updateMonth(dataMonth: WritableSignal<string>, $event: Event) {
+    const input = $event.target as HTMLInputElement;
+    const value = input.value;
     const month = parseInt(value, 10);
-    if (month >= 1 && month <= 12) {
-      this.startMonth.set(value.padStart(2, '0'));
+    if (!isNaN(month) && month >= 1 && month <= 12) {
+      dataMonth.set(month.toString().padStart(2, '0'));
     }
   }
 
-  updateEndMonth(value: string) {
-    if (!value) return;
-    const month = parseInt(value, 10);
-    if (month >= 1 && month <= 12) {
-      this.endMonth.set(value.padStart(2, '0'));
-    }
-  }
 
   calculateSubTotal(categories: BudgetCategories, monthIndex: number) {
     return categories.subcategories.reduce(
