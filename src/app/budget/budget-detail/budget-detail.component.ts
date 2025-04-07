@@ -25,15 +25,15 @@ export class BudgetDetailComponent implements OnInit {
   // Apply to all
   isContextMenuVisible = false;
   contextMenuPosition: { top: number; left: number } | null = null;
-  selectedRowIndex: number  = 0;
-  selectedColIndex: number  = 0;
+  selectedRowIndex: number = 0;
+  selectedColIndex: number = 0;
   valueToApply = signal<ToApply>({ type: null, value: 0 });
 
   constructor() {}
 
   ngOnInit() {}
 
-  getMonthName(month: number): string {
+  getMonthName(month: number) {
     const monthNames = [
       'January',
       'February',
@@ -51,9 +51,7 @@ export class BudgetDetailComponent implements OnInit {
     return monthNames[month - 1];
   }
 
-  getMonths(): string[] {
-    if (parseInt(this.endMonth(), 10) < parseInt(this.startMonth(), 10))
-      return [];
+  getMonths() {
     const start = parseInt(this.startMonth(), 10);
     const end = parseInt(this.endMonth(), 10);
     const months = [];
@@ -86,10 +84,7 @@ export class BudgetDetailComponent implements OnInit {
     );
   }
 
-  calculateColumnTotal(
-    categories: BudgetCategories[],
-    columnIndex: number
-  ) {
+  calculateColumnTotal(categories: BudgetCategories[], columnIndex: number) {
     return categories.reduce((acc, folder) => {
       return (
         acc +
@@ -233,43 +228,45 @@ export class BudgetDetailComponent implements OnInit {
     return null;
   }
 
-
   //Apply to all
   onRightClick(event: MouseEvent, rowIndex: number, colIndex: number) {
     event.preventDefault();
     const target = event.target as HTMLInputElement;
     const dataType = target.getAttribute('data-type');
     const value = parseFloat(target.value) || 0;
-    
+
     this.valueToApply.set({
       type: dataType,
-      value
+      value,
     });
     this.contextMenuPosition = { top: event.clientY, left: event.clientX };
     this.selectedRowIndex = rowIndex;
     this.selectedColIndex = colIndex;
     this.isContextMenuVisible = true;
   }
-  
+
   applyToAll() {
     if (this.selectedRowIndex !== null && this.selectedColIndex !== null) {
-      const list = this.valueToApply().type === 'income' ? this.incomeCategories() : this.expenseCategories();
-      list.forEach(category => {
-        category.subcategories.forEach(subcategory => {
+      const list =
+        this.valueToApply().type === 'income'
+          ? this.incomeCategories()
+          : this.expenseCategories();
+      list.forEach((category) => {
+        category.subcategories.forEach((subcategory) => {
           subcategory.datas[this.selectedColIndex] = this.valueToApply().value;
         });
       });
       this.onCloseContextMenu();
     }
   }
-  
+
   onCloseContextMenu() {
     this.isContextMenuVisible = false;
     this.contextMenuPosition = null;
-    this.selectedRowIndex = 0; 
-    this.selectedColIndex = 0;  
+    this.selectedRowIndex = 0;
+    this.selectedColIndex = 0;
   }
-  
+
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent) {
     const target = event.target as HTMLElement;
@@ -277,5 +274,5 @@ export class BudgetDetailComponent implements OnInit {
       this.isContextMenuVisible = false;
     }
   }
-  
+
 }

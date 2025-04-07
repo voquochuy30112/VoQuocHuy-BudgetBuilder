@@ -25,7 +25,7 @@
         <ng-container *ngFor="let month of getMonths()">
           <th class="border border-gray-400 p-2 text-center">{{ month }}</th>
         </ng-container>
-        <th class="border border-gray-400 p-2 text-left">Action</th>
+        <th class="border border-gray-400 p-2 text-center">Action</th>
       </tr>
     </thead>
 
@@ -87,7 +87,10 @@
             <ng-container
               *ngFor="let month of getMonths(); let colIndex = index"
             >
-              <td class="border border-gray-400 p-2 text-center" (contextmenu)="onRightClick($event, rowIndex, colIndex)">
+              <td
+                class="border border-gray-400 p-2 text-center"
+                (contextmenu)="onRightClick($event, rowIndex, colIndex)"
+              >
                 <input
                   class="w-full text-right excel-input"
                   type="number"
@@ -190,6 +193,7 @@
               [id]="category.uuid"
               [(ngModel)]="category.name"
               placeholder="Enter category name"
+              (keyup.enter)="onAddSubcategory(category)"
             />
           </td>
           <td
@@ -235,6 +239,10 @@
                   [attr.data-col]="colIndex"
                   [attr.data-type]="'expense'"
                   (keydown)="handleArrowKey($event)"
+                  (keyup.enter)="
+                    colIndex === this.getMonths().length - 1 &&
+                      onAddSubcategory(category)
+                  "
                   #cellInput
                 />
               </td>
@@ -336,17 +344,17 @@
 </div>
 
 <div
-*ngIf="isContextMenuVisible"
-[ngStyle]="{
-  top: contextMenuPosition?.top + 'px',
-  left: contextMenuPosition?.left + 'px'
-}"
-class="context-menu"
-(click)="onCloseContextMenu()"
+  *ngIf="isContextMenuVisible"
+  [ngStyle]="{
+    top: contextMenuPosition?.top + 'px',
+    left: contextMenuPosition?.left + 'px'
+  }"
+  class="context-menu"
+  (click)="onCloseContextMenu()"
 >
-<ul>
-  <li (click)="applyToAll()">Apply to all</li>
-</ul>
+  <ul>
+    <li (click)="applyToAll()">Apply to all</li>
+  </ul>
 </div>
 
 <ng-template #iconDelete>
