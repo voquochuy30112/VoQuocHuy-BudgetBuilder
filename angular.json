@@ -72,7 +72,7 @@
               "buildTarget": "BudgetBuilderVoQuocHuy:build:production"
             },
             "development": {
-              "buildTarget": "BudgetBuilderVo1QuocHuy:build:development"
+              "buildTarget": "BudgetBuilderVoQuocHuy:build:development"
             }
           },
           "defaultConfiguration": "development"
