@@ -2,7 +2,8 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "yarn"
+    "packageManager": "yarn",
+    "analytics": "5bea7b3d-69b0-47e7-a556-fb302bd722e6"
   },
   "newProjectRoot": "projects",
   "projects": {
@@ -68,10 +69,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "browserTarget": "BudgetBuilderVoQuocHuy:build:production"
+              "buildTarget": "BudgetBuilderVoQuocHuy:build:production"
             },
             "development": {
-              "browserTarget": "BudgetBuilderVoQuocHuy:build:development"
+              "buildTarget": "BudgetBuilderVo1QuocHuy:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -79,7 +80,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "BudgetBuilderVoQuocHuy:build"
+            "buildTarget": "BudgetBuilderVoQuocHuy:build"
           }
         },
         "test": {

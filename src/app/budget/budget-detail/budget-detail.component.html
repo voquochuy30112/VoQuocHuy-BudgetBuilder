@@ -1,0 +1,403 @@
+<div class="overflow-x-auto p-4">
+  <table class="min-w-full border-collapse border border-gray-400">
+    <thead>
+      <tr>
+        <th class="border border-gray-400 p-2 text-left min-w-[240px]">
+          Start Period
+          <input
+            type="number"
+            [(ngModel)]="startMonth"
+            (ngModelChange)="updateStartMonth($event)"
+            min="1"
+            max="12"
+            class="w-8 px-1 outline-none border-none"
+          />
+          End Period
+          <input
+            type="number"
+            [(ngModel)]="endMonth"
+            (ngModelChange)="updateEndMonth($event)"
+            min="1"
+            max="12"
+            class="w-8 px-1 outline-none border-none"
+          />
+        </th>
+        <ng-container *ngFor="let month of getMonths()">
+          <th class="border border-gray-400 p-2 text-center">{{ month }}</th>
+        </ng-container>
+        <th class="border border-gray-400 p-2 text-left">Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Income</td>
+        <td
+          class="border border-gray-400 p-2 text-center"
+          *ngIf="getMonths().length"
+          [colSpan]="getMonths().length"
+        ></td>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+
+      <ng-container
+        *ngFor="let category of incomeCategories(); let folderIndex = index"
+      >
+        <tr>
+          <td class="border border-gray-400 p-2">
+            <input
+              class="w-full font-bold excel-input"
+              [id]="category.uuid"
+              [(ngModel)]="category.name"
+              placeholder="Enter category name"
+              (keyup.enter)="onAddSubcategory(category)"
+            />
+          </td>
+          <td
+            class="border border-gray-400 p-2 text-center"
+            *ngIf="getMonths().length"
+            [colSpan]="getMonths().length"
+          ></td>
+          <td class="border border-gray-400 p-2 text-center">
+            <span
+              class="cursor-pointer flex justify-center"
+              (click)="onDeleteFolder(incomeCategories(), folderIndex)"
+            >
+              <ng-container *ngTemplateOutlet="iconDelete"></ng-container>
+            </span>
+          </td>
+        </tr>
+
+        <ng-container
+          *ngFor="
+            let sub of category.subcategories;
+            let rowIndex = index;
+            let lastRow = last
+          "
+        >
+          <tr>
+            <td class="border border-gray-400 p-2 pl-8">
+              <input
+                class="w-full excel-input"
+                [id]="sub.uuid"
+                [(ngModel)]="sub.name"
+                placeholder="Enter item category name"
+              />
+            </td>
+            <ng-container
+              *ngFor="let month of getMonths(); let colIndex = index"
+            >
+              <td class="border border-gray-400 p-2 text-center" (contextmenu)="onRightClick($event, rowIndex, colIndex)">
+                <input
+                  class="w-full text-right excel-input"
+                  type="number"
+                  [(ngModel)]="sub.datas[colIndex]"
+                  placeholder="0"
+                  [attr.data-row]="rowIndex"
+                  [attr.data-col]="colIndex"
+                  [attr.data-type]="'income'"
+                  (keydown)="handleArrowKey($event)"
+                  (keyup.enter)="
+                    colIndex === this.getMonths().length - 1 &&
+                      onAddSubcategory(category)
+                  "
+                  #cellInput
+                />
+              </td>
+            </ng-container>
+            <td class="border border-gray-400 p-2 text-center">
+              <span
+                class="cursor-pointer flex justify-center"
+                (click)="onDeleteItem(category, rowIndex)"
+              >
+                <ng-container *ngTemplateOutlet="iconDelete"></ng-container>
+              </span>
+            </td>
+          </tr>
+        </ng-container>
+
+        <tr>
+          <td class="border border-gray-400 p-2">
+            <button
+              (click)="onAddSubcategory(category)"
+              class="cursor-pointer"
+              [disabled]="!category.name || !isValidBtnSubAdd(category)"
+            >
+              + Add new ‘{{ category.name }}’ category
+            </button>
+          </td>
+          <td
+            class="border border-gray-400 p-2 text-center"
+            *ngIf="getMonths().length"
+            [colSpan]="getMonths().length"
+          ></td>
+          <td class="border border-gray-400 p-2 text-center"></td>
+        </tr>
+        <tr>
+          <td class="border border-gray-400 p-2 font-bold">Sub Total</td>
+          <ng-container *ngFor="let month of getMonths(); let i = index">
+            <td class="border border-gray-400 p-2 text-right font-bold">
+              {{ calculateSubTotal(category, i) }}
+            </td>
+          </ng-container>
+        </tr>
+      </ng-container>
+
+      <tr>
+        <td class="border border-gray-400 p-2">
+          <button
+            (click)="onAddcategory(incomeCategories())"
+            class="cursor-pointer"
+            [disabled]="!isValidBtnAdd(incomeCategories())"
+          >
+            + Add new Parent Category
+          </button>
+        </td>
+        <td
+          class="border border-gray-400 p-2 text-center"
+          *ngIf="getMonths().length"
+          [colSpan]="getMonths().length"
+        ></td>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Total Income</td>
+        <ng-container *ngFor="let month of getMonths(); let i = index">
+          <td class="border border-gray-400 p-2 text-right font-bold">
+            {{ calculateColumnTotal(incomeCategories(), i) }}
+          </td>
+        </ng-container>
+      </tr>
+
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Expenses</td>
+        <td
+          class="border border-gray-400 p-2 text-center"
+          *ngIf="getMonths().length"
+          [colSpan]="getMonths().length"
+        ></td>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+
+      <ng-container
+        *ngFor="let category of expenseCategories(); let folderIndex = index"
+      >
+        <tr>
+          <td class="border border-gray-400 p-2">
+            <input
+              class="w-full font-bold excel-input"
+              [id]="category.uuid"
+              [(ngModel)]="category.name"
+              placeholder="Enter category name"
+            />
+          </td>
+          <td
+            class="border border-gray-400 p-2 text-center"
+            *ngIf="getMonths().length"
+            [colSpan]="getMonths().length"
+          ></td>
+          <td class="border border-gray-400 p-2 text-center">
+            <span
+              class="cursor-pointer flex justify-center"
+              (click)="onDeleteFolder(expenseCategories(), folderIndex)"
+            >
+              <ng-container *ngTemplateOutlet="iconDelete"></ng-container>
+            </span>
+          </td>
+        </tr>
+
+        <ng-container
+          *ngFor="let sub of category.subcategories; let rowIndex = index"
+        >
+          <tr>
+            <td class="border border-gray-400 p-2 pl-8">
+              <input
+                class="w-full excel-input"
+                [id]="sub.uuid"
+                [(ngModel)]="sub.name"
+                placeholder="Enter item category name"
+              />
+            </td>
+            <ng-container
+              *ngFor="let month of getMonths(); let colIndex = index"
+            >
+              <td
+                class="border border-gray-400 p-2 text-center"
+                (contextmenu)="onRightClick($event, rowIndex, colIndex)"
+              >
+                <input
+                  class="w-full text-right excel-input"
+                  type="number"
+                  [(ngModel)]="sub.datas[colIndex]"
+                  placeholder="0"
+                  [attr.data-row]="rowIndex"
+                  [attr.data-col]="colIndex"
+                  [attr.data-type]="'expense'"
+                  (keydown)="handleArrowKey($event)"
+                  #cellInput
+                />
+              </td>
+            </ng-container>
+            <td class="border border-gray-400 p-2 text-center">
+              <span
+                class="cursor-pointer flex justify-center"
+                (click)="onDeleteItem(category, rowIndex)"
+              >
+                <ng-container *ngTemplateOutlet="iconDelete"></ng-container
+              ></span>
+            </td>
+          </tr>
+        </ng-container>
+        <tr>
+          <td class="border border-gray-400 p-2">
+            <button
+              (click)="onAddSubcategory(category)"
+              class="cursor-pointer"
+              [disabled]="!category.name"
+            >
+              + Add new ‘{{ category.name }}’ category
+            </button>
+          </td>
+          <td
+            class="border border-gray-400 p-2 text-center"
+            *ngIf="getMonths().length"
+            [colSpan]="getMonths().length"
+          ></td>
+          <td class="border border-gray-400 p-2 text-center"></td>
+        </tr>
+
+        <tr>
+          <td class="border border-gray-400 p-2 font-bold">Sub Total</td>
+          <ng-container *ngFor="let month of getMonths(); let i = index">
+            <td class="border border-gray-400 p-2 text-right font-bold">
+              {{ calculateSubTotal(category, i) }}
+            </td>
+          </ng-container>
+        </tr>
+      </ng-container>
+
+      <tr>
+        <td class="border border-gray-400 p-2">
+          <button
+            (click)="onAddcategory(expenseCategories())"
+            class="cursor-pointer"
+            [disabled]="!isValidBtnAdd(expenseCategories())"
+          >
+            + Add new Parent Category
+          </button>
+        </td>
+        <td
+          class="border border-gray-400 p-2 text-center"
+          *ngIf="getMonths().length"
+          [colSpan]="getMonths().length"
+        ></td>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Total Expenses</td>
+        <ng-container *ngFor="let month of getMonths(); let i = index">
+          <td class="border border-gray-400 p-2 text-right font-bold">
+            {{ calculateColumnTotal(expenseCategories(), i) }}
+          </td>
+        </ng-container>
+      </tr>
+
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Profit / Loss</td>
+        <ng-container *ngFor="let month of getMonths(); let i = index">
+          <td class="border border-gray-400 p-2 text-right font-bold">
+            {{ calculateProfitLoss(i) }}
+          </td>
+        </ng-container>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Opening Balance</td>
+        <ng-container *ngFor="let month of getMonths(); let i = index">
+          <td class="border border-gray-400 p-2 text-right font-bold">
+            {{ getOpeningBalance(i) }}
+          </td>
+        </ng-container>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+      <tr>
+        <td class="border border-gray-400 p-2 font-bold">Closing Balance</td>
+        <ng-container *ngFor="let month of getMonths(); let i = index">
+          <td class="border border-gray-400 p-2 text-right font-bold">
+            {{ getClosingBalance(i) }}
+          </td>
+        </ng-container>
+        <td class="border border-gray-400 p-2 text-center"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div
+*ngIf="isContextMenuVisible"
+[ngStyle]="{
+  top: contextMenuPosition?.top + 'px',
+  left: contextMenuPosition?.left + 'px'
+}"
+class="context-menu"
+(click)="onCloseContextMenu()"
+>
+<ul>
+  <li (click)="applyToAll()">Apply to all</li>
+</ul>
+</div>
+
+<ng-template #iconDelete>
+  <svg
+    class="w-5 h-5 icon-delete"
+    viewBox="0 0 30 30"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+    <g
+      id="SVGRepo_tracerCarrier"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    ></g>
+    <g id="SVGRepo_iconCarrier">
+      <path
+        d="M10 12V17"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <path
+        d="M14 12V17"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <path
+        d="M4 7H20"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <path
+        d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+      <path
+        d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      ></path>
+    </g>
+  </svg>
+</ng-template>
